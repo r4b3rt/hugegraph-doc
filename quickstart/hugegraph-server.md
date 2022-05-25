@@ -60,7 +60,7 @@ bin/hugegraph deploy -v {hugegraph-version} -p {install-path} [-u {download-path
 #### 3.2 下载tar包
 
 ```bash
-wget https://github.com/hugegraph/hugegraph/releases/download/v${version}/hugegraph-${version}.tar.gz
+wget https://github.com/apache/hugegraph/releases/download/v${version}/hugegraph-${version}.tar.gz
 tar -zxvf hugegraph-${version}.tar.gz
 ```
 
@@ -69,7 +69,7 @@ tar -zxvf hugegraph-${version}.tar.gz
 下载HugeGraph源代码
 
 ```bash
-git clone https://github.com/hugegraph/hugegraph.git
+git clone https://github.com/apache/hugegraph.git hugegraph
 ```
 
 编译打包生成tar包
@@ -83,7 +83,8 @@ mvn package -DskipTests
 
 ```bash
 ......
-[INFO] Reactor Summary:
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for hugegraph 0.13.0:
 [INFO] 
 [INFO] hugegraph .......................................... SUCCESS [  0.003 s]
 [INFO] hugegraph-core ..................................... SUCCESS [ 15.335 s]
@@ -93,12 +94,15 @@ mvn package -DskipTests
 [INFO] hugegraph-rocksdb .................................. SUCCESS [  0.506 s]
 [INFO] hugegraph-mysql .................................... SUCCESS [  0.412 s]
 [INFO] hugegraph-palo ..................................... SUCCESS [  0.359 s]
+[INFO] hugegraph-hbase .................................... SUCCESS [ 1:55 min]
+[INFO] hugegraph-postgresql ............................... SUCCESS [ 1:02 min]
 [INFO] hugegraph-dist ..................................... SUCCESS [  7.470 s]
 [INFO] hugegraph-example .................................. SUCCESS [  0.403 s]
 [INFO] hugegraph-test ..................................... SUCCESS [  1.509 s]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
+
 ......
 ```
 
@@ -106,7 +110,7 @@ mvn package -DskipTests
 
 ### 4 配置
 
-如果需要快速启动HugeGraph仅用于测试，那么只需要进行少数几个配置项的修改即可（见下一节）。
+如果需要快速启动 HugeGraph 仅用于测试，那么只需要进行少数几个配置项的修改即可（见下一节）。
 详细的配置介绍请参考[配置文档](/config/config-guide.md)及[配置项介绍](/config/config-option.md)
 
 ### 5 启动
@@ -276,6 +280,47 @@ serializer=hbase
 # hbase backend config
 hbase.hosts=localhost
 hbase.port=2181
+```
+
+初始化数据库（仅第一次启动时需要）
+
+```bash
+cd hugegraph-${version}
+bin/init-store.sh
+```
+
+启动server
+
+```bash
+bin/start-hugegraph.sh
+Starting HugeGraphServer...
+Connecting to HugeGraphServer (http://127.0.0.1:8080/graphs)....OK
+```
+
+#### 5.6 Palo
+
+> 用户需自行安装百度Palo或者Apache doris，推荐版本1.0以上，[下载地址](http://doris.incubator.apache.org/downloads/downloads.html)
+
+修改 hugegraph.properties
+
+```properties
+backend=palo
+serializer=palo
+
+# mysql backend config (Palo目前还需要使用MySQL的URL来建立连接进行数据读取)
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://192.168.1.241:9030
+jdbc.username=root
+jdbc.password=
+
+# palo backend config
+palo.host=192.168.1.241
+palo.http_port=8030
+palo.username=root
+palo.password=
+palo.poll_interval=10
+palo.temp_dir=./palo-data
+palo.file_limit_size=32
 ```
 
 初始化数据库（仅第一次启动时需要）
